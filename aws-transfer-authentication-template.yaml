@@ -2,10 +2,18 @@
 "AWSTemplateFormatVersion": "2010-09-09"
 "Description": "A basic template for creating a Lambda-backed API Gateway for use as a custom idenity provider in AWS Transfer for SFTP. By default, it authenticates a single user in a single server using a hardcoded SSH key or password. You can update the Lambda function code to do something different after deployment."
 "Parameters":
-  "authenticationServer":
+  "authenticationPath":
     "Type": "String"
     "Description": "Full URL of the endpoint that should be sent a POST to perform authentication."
-    "Default": "https://www.priorartarchive.org/api/sftp-authentication"
+    "Default": "https://www.priorartarchive.org/api/login"
+  "lambdaFunctionS3Bucket":
+    "Type": "String"
+    "Description": "S3 Bucket name where lambda zip files is uploaded."
+    "Default": "assets.priorartarchive.org"
+  "lambdaFunctionS3Key":
+    "Type": "String"
+    "Description": "S3 key of lambda zip file."
+    "Default": "_sftpAuthenticationLambda.zip"
 "Outputs":
   "StackArn":
     "Value":
@@ -90,10 +98,16 @@
   "GetUserConfigLambda":
     "Properties":
       "Code":
-        "ZipFile":
-          "Fn::Sub": "'use strict';\n\n// GetUserConfig Lambda\n\nexports.handler = (event, context, callback) => {\n  console.log(\"Event:\", JSON.stringify(event));\n\n  var response;\n  if (event.serverId == '${TransferServerId}' && event.username == '${TransferUserName}') {\n    response = {\n      Role: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${TransferUserRoleName}',\n      Policy: '{ \"Version\": \"2012-10-17\", \"Statement\": [{ \"Effect\": \"Allow\", \"Action\": \"s3:*\", \"Resource\": \"*\" }]}', // Not required\n      HomeDirectory: '${TransferUserHomeDirectory}' // Not required, defaults to '/'\n    };\n\n    if (event.password == \"\") {\n      response['PublicKeys'] = [ \"${TransferUserPublicKey1}\" ]; // If no password provided, return the user's SSH public key\n    } else if (event.password !== '${TransferUserPassword}') { // Reject any password that doesn't match '${TransferUserPassword}' \n      response = {};\n    }\n  } else {\n    response = {};\n  }\n  callback(null, response);\n};\n"
+        "S3Bucket":
+          Ref: lambdaFunctionS3Bucket
+        "S3Key":
+          Ref: lambdaFunctionS3Key
+      "Environment":
+        "Variables":
+          "authenticationPath":
+            Ref: authenticationPath
       "Description": "A function to provide IAM roles and policies for given user and serverId."
-      "Handler": "index.handler"
+      "Handler": "lambda.handler"
       "Role":
         "Fn::GetAtt": "LambdaExecutionRole.Arn"
       "Runtime": "nodejs8.10"

@@ -2,7 +2,11 @@
 
 This repo provides a .yaml template to be used with AWS CloudFormation. It is based on [this template](https://da02pmi3nq7t1.cloudfront.net/aws-transfer-apig-lambda.cfn.yml) provided by AWS in their [AWS Transfer docs](https://docs.aws.amazon.com/transfer/latest/userguide/authenticating-users.html#authentication-custom-ip).
 
-The single customization paramter is `authenticationServer`. A POST requst will be sent to the URL listed in `authenticationServer` with the following body:
+The customization paramters are `authenticationPath`, `lambdaFunctionS3Bucket`, `lambdaFunctionS3Key`.
+
+To build the lambda trigger, compress `lambda.js` and `node_modules` into a .zip file and place it in an s3 bucket according to the customization parameters `lambdaFunctionS3Bucket/lambdaFunctionS3Key`.
+
+The lambda trigger will send a POST request to the URL listed in `authenticationPath` with the following body
 
 ```
 {
@@ -12,18 +16,4 @@ The single customization paramter is `authenticationServer`. A POST requst will 
 }
 ```
 
-This method should always return HTTP status 200. Any other HTTP status code denotes an error accessing the API.
-
-The response should be of the following form:
-
-```
-{
- "Role": "IAM role with configured S3 permissions",
- "PublicKeys": [
-     "ssh-rsa public-key1",
-     "ssh-rsa public-key2"
-  ],
- "Policy": "STS Assume role scope down policy",
- "HomeDirectory": "User's home directory"
-}
-```
+The route at `authenticationPath` should return a 200 status code for a succesful authentication, and any other status code for a failed authentication.

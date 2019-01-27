@@ -1,0 +1,13 @@
+{
+  "name": "priorart-sftp-authentication-function",
+  "version": "1.0.0",
+  "description": "Authentication function for AWS Lambda",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "https": "^1.0.0"
+  }
+}
