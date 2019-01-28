@@ -14,6 +14,10 @@
     "Type": "String"
     "Description": "S3 key of lambda zip file."
     "Default": "_sftpAuthenticationLambda.zip"
+  "homeDirectoryBucket":
+    "Type": "String"
+    "Description": "Bucket containing a user's home directory."
+    "Default": "priorart-sftp-dev"
 "Outputs":
   "StackArn":
     "Value":
@@ -106,6 +110,8 @@
         "Variables":
           "authenticationPath":
             Ref: authenticationPath
+          "homeDirectoryBucket":
+            Ref: homeDirectoryBucket
       "Description": "A function to provide IAM roles and policies for given user and serverId."
       "Handler": "lambda.handler"
       "Role":
