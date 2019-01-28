@@ -46,7 +46,6 @@ exports.handler = (event, context, callback) => {
 					"Sid": "AWSTransferRequirements",
 					"Effect": "Allow",
 					"Action": [
-						"s3:ListAllMyBuckets",
 						"s3:GetBucketLocation"
 					],
 					"Resource": "*"
